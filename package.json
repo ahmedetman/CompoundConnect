@@ -3,5 +3,22 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:mobile\"",
+    "dev:api": "cd packages/api && npm run dev",
+    "dev:mobile": "cd apps/mobile && npm start",
+    "build": "npm run build:api",
+    "build:api": "cd packages/api && npm run build",
+    "migrate": "cd packages/api && npm run migrate",
+    "seed": "cd packages/api && npm run seed",
+    "test": "npm run test:api",
+    "test:api": "cd packages/api && npm test",
+    "install:all": "npm install && cd packages/api && npm install && cd ../../apps/mobile && npm install",
+    "clean": "rm -rf node_modules packages/*/node_modules apps/*/node_modules",
+    "feedback:test": "cd packages/api && node scripts/test-feedback.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
 }

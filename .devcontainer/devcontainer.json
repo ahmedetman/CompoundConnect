@@ -1,10 +1,11 @@
 {
   "name": "CompoundConnect",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
 
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
 
   "customizations": {
@@ -15,26 +16,78 @@
         "esbenp.prettier-vscode",
         "ms-vscode.vscode-json",
         "expo.vscode-expo-tools",
-        "ms-vscode.vscode-eslint"
+        "ms-vscode.vscode-eslint",
+        "ms-vscode.vscode-node-debug2",
+        "ms-vscode.vscode-js-debug",
+        "humao.rest-client",
+        "ms-vscode.vscode-sqlite",
+        "ms-ceintl.vscode-language-pack-ar",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "always"
+        },
+        "files.associations": {
+          "*.json": "jsonc"
+        },
+        "emmet.includeLanguages": {
+          "javascript": "javascriptreact"
+        },
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "javascript.preferences.includePackageJsonAutoImports": "auto"
       }
     }
   },
 
-  "forwardPorts": [3000, 8081, 19000, 19001, 19002],
+  "forwardPorts": [3000, 3001, 8081, 19000, 19001, 19002, 19006],
   "portsAttributes": {
-    "3000": { "label": "Web Server" },
-    "8081": { "label": "Metro Bundler" },
-    "19000": { "label": "Expo Dev Server" },
-    "19001": { "label": "Expo Dev Server (LAN)" },
-    "19002": { "label": "Expo Dev Server (Tunnel)" }
+    "3000": { 
+      "label": "Web Dashboard",
+      "onAutoForward": "notify"
+    },
+    "3001": { 
+      "label": "API Server",
+      "onAutoForward": "notify"
+    },
+    "8081": { 
+      "label": "Metro Bundler",
+      "onAutoForward": "silent"
+    },
+    "19000": { 
+      "label": "Expo Dev Server",
+      "onAutoForward": "silent"
+    },
+    "19001": { 
+      "label": "Expo Dev Server (LAN)",
+      "onAutoForward": "silent"
+    },
+    "19002": { 
+      "label": "Expo Dev Server (Tunnel)",
+      "onAutoForward": "silent"
+    },
+    "19006": { 
+      "label": "Expo Web Server",
+      "onAutoForward": "notify"
+    }
   },
 
-  "postCreateCommand": "npm install -g @expo/cli && npm install",
+  "postCreateCommand": "npm install -g @expo/cli && npm install && cd packages/api && npm install && cd ../../apps/mobile && npm install",
 
-  "remoteUser": "node"
+  "postStartCommand": "cd packages/api && npm run migrate && cd ../.. && nohup npm run dev > dev.log 2>&1 & echo 'API Server and Mobile App starting in background. Check dev.log for output.'",
+
+  "remoteUser": "node",
+
+  "mounts": [
+    "source=${localWorkspaceFolder}/packages/api/uploads,target=${containerWorkspaceFolder}/packages/api/uploads,type=bind,consistency=cached"
+  ],
+
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "TZ": "UTC"
+  }
 }

@@ -1,0 +1,62 @@
+{
+  "feedback": {
+    "submitted_successfully": "تم إرسال الملاحظات بنجاح",
+    "failed_to_submit": "فشل في إرسال الملاحظات",
+    "not_found": "الملاحظات غير موجودة",
+    "access_denied": "تم رفض الوصول",
+    "admin_privileges_required": "تم رفض الوصول. مطلوب صلاحيات المدير.",
+    "super_admin_privileges_required": "تم رفض الوصول. مطلوب صلاحيات المدير العام.",
+    "status_updated_successfully": "تم تحديث حالة الملاحظات بنجاح",
+    "failed_to_update_status": "فشل في تحديث حالة الملاحظات",
+    "failed_to_retrieve": "فشل في استرداد الملاحظات",
+    "failed_to_retrieve_list": "فشل في استرداد قائمة الملاحظات",
+    "failed_to_retrieve_stats": "فشل في استرداد إحصائيات الملاحظات",
+    "deleted_successfully": "تم حذف الملاحظات بنجاح",
+    "failed_to_delete": "فشل في حذف الملاحظات",
+    "invalid_file_type": "يُسمح فقط بالصور وملفات PDF والمستندات وملفات السجل"
+  },
+  "validation": {
+    "type_required": "نوع الملاحظات مطلوب",
+    "type_invalid": "يجب أن يكون نوع الملاحظات أحد: تقرير خطأ، طلب ميزة، اقتراح تحسين، ملاحظات عامة",
+    "category_invalid": "يجب أن تكون الفئة أحد: التطبيق، رموز QR، المدفوعات، الإشعارات، الأمان، واجهة المستخدم، الأداء، أخرى",
+    "title_required": "العنوان مطلوب",
+    "title_min_length": "يجب أن يكون العنوان 5 أحرف على الأقل",
+    "title_max_length": "لا يمكن أن يتجاوز العنوان 200 حرف",
+    "description_required": "الوصف مطلوب",
+    "description_min_length": "يجب أن يكون الوصف 10 أحرف على الأقل",
+    "description_max_length": "لا يمكن أن يتجاوز الوصف 2000 حرف",
+    "priority_invalid": "يجب أن تكون الأولوية أحد: منخفضة، متوسطة، عالية، حرجة",
+    "status_required": "الحالة مطلوبة",
+    "status_invalid": "يجب أن تكون الحالة أحد: مفتوحة، قيد التنفيذ، محلولة، مغلقة، مكررة",
+    "admin_response_max_length": "لا يمكن أن يتجاوز رد المدير 1000 حرف"
+  },
+  "types": {
+    "bug": "تقرير خطأ",
+    "feature_request": "طلب ميزة",
+    "improvement": "اقتراح تحسين",
+    "general": "ملاحظات عامة"
+  },
+  "categories": {
+    "app": "تطبيق الهاتف",
+    "qr_codes": "رموز QR",
+    "payments": "المدفوعات",
+    "notifications": "الإشعارات",
+    "security": "الأمان",
+    "ui_ux": "واجهة المستخدم",
+    "performance": "الأداء",
+    "other": "أخرى"
+  },
+  "priorities": {
+    "low": "منخفضة",
+    "medium": "متوسطة",
+    "high": "عالية",
+    "critical": "حرجة"
+  },
+  "statuses": {
+    "open": "مفتوحة",
+    "in_progress": "قيد التنفيذ",
+    "resolved": "محلولة",
+    "closed": "مغلقة",
+    "duplicate": "مكررة"
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "folders": [
+    {
+      "name": "Root",
+      "path": "."
+    },
+    {
+      "name": "API",
+      "path": "./packages/api"
+    },
+    {
+      "name": "Mobile App",
+      "path": "./apps/mobile"
+    },
+    {
+      "name": "Documentation",
+      "path": "./docs"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "javascript.preferences.includePackageJsonAutoImports": "auto",
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "files.associations": {
+      "*.http": "http",
+      "*.rest": "http"
+    },
+    "rest-client.environmentVariables": {
+      "local": {
+        "baseUrl": "http://localhost:3001/api",
+        "authToken": "your-jwt-token-here"
+      },
+      "development": {
+        "baseUrl": "http://localhost:3001/api",
+        "authToken": "your-jwt-token-here"
+      }
+    },
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/.expo": true,
+      "**/uploads": false
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/.expo": true,
+      "**/uploads": true
+    },
+    "emmet.includeLanguages": {
+      "javascript": "javascriptreact",
+      "typescript": "typescriptreact"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-typescript-next",
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-json",
+      "expo.vscode-expo-tools",
+      "ms-vscode.vscode-eslint",
+      "humao.rest-client",
+      "ms-vscode.vscode-sqlite",
+      "ms-ceintl.vscode-language-pack-ar",
+      "formulahendry.auto-rename-tag",
+      "christian-kohler.path-intellisense",
+      "ms-vscode.vscode-node-debug2",
+      "ms-vscode.vscode-js-debug"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Start API Server",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "dev"],
+        "options": {
+          "cwd": "${workspaceFolder}/packages/api"
+        },
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": true,
+          "clear": false
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Start Mobile App",
+        "type": "shell",
+        "command": "npm",
+        "args": ["start"],
+        "options": {
+          "cwd": "${workspaceFolder}/apps/mobile"
+        },
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": true,
+          "clear": false
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Run Database Migration",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "migrate"],
+        "options": {
+          "cwd": "${workspaceFolder}/packages/api"
+        },
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": true,
+          "panel": "shared"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Test Feedback System",
+        "type": "shell",
+        "command": "node",
+        "args": ["scripts/test-feedback.js"],
+        "options": {
+          "cwd": "${workspaceFolder}/packages/api"
+        },
+        "group": "test",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": true,
+          "panel": "shared"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Start All Development Servers",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "dev"],
+        "options": {
+          "cwd": "${workspaceFolder}"
+        },
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": true,
+          "clear": false
+        },
+        "problemMatcher": []
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug API Server",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder}/packages/api/src/index.js",
+        "env": {
+          "NODE_ENV": "development"
+        },
+        "console": "integratedTerminal",
+        "restart": true,
+        "runtimeExecutable": "nodemon",
+        "runtimeArgs": ["--inspect"]
+      },
+      {
+        "name": "Debug Feedback Test",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder}/packages/api/scripts/test-feedback.js",
+        "console": "integratedTerminal"
+      }
+    ]
+  }
+}

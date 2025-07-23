@@ -1,0 +1,191 @@
+###
+# CompoundConnect Feedback API Test Collection
+# Use with REST Client extension in VS Code
+###
+
+@baseUrl = http://localhost:3001/api
+@authToken = your-jwt-token-here
+
+### Health Check
+GET {{baseUrl}}/../health
+
+### Get Feedback Options (English)
+GET {{baseUrl}}/feedback/options?lang=en
+
+### Get Feedback Options (Arabic)
+GET {{baseUrl}}/feedback/options?lang=ar
+Accept-Language: ar
+
+### Submit Feedback (English)
+POST {{baseUrl}}/feedback
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "type": "bug",
+  "category": "app",
+  "title": "App crashes on startup",
+  "description": "The application crashes immediately when I try to open it. This happens consistently on my device. Steps to reproduce: 1. Open the app 2. App crashes immediately 3. No error message is shown",
+  "priority": "high",
+  "device_info": "{\"platform\":\"iOS\",\"version\":\"16.0\",\"model\":\"iPhone 14\"}",
+  "app_version": "1.0.0",
+  "is_anonymous": false
+}
+
+### Submit Feedback (Arabic)
+POST {{baseUrl}}/feedback
+Authorization: Bearer {{authToken}}
+Accept-Language: ar
+Content-Type: application/json
+
+{
+  "type": "feature_request",
+  "category": "ui_ux",
+  "title": "إضافة الوضع المظلم",
+  "description": "أرغب في إضافة الوضع المظلم للتطبيق لتحسين تجربة الاستخدام في الإضاءة المنخفضة",
+  "priority": "medium",
+  "device_info": "{\"platform\":\"Android\",\"version\":\"13\",\"model\":\"Samsung Galaxy S23\"}",
+  "app_version": "1.0.0",
+  "is_anonymous": false
+}
+
+### Get User's Own Feedback
+GET {{baseUrl}}/feedback/my-feedback?page=1&limit=10
+Authorization: Bearer {{authToken}}
+
+### Get All Feedback (Admin Only)
+GET {{baseUrl}}/feedback?page=1&limit=20&status=open&type=bug
+Authorization: Bearer {{authToken}}
+
+### Get Specific Feedback
+GET {{baseUrl}}/feedback/1
+Authorization: Bearer {{authToken}}
+
+### Update Feedback Status (Admin Only)
+PATCH {{baseUrl}}/feedback/1/status
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "in_progress",
+  "admin_response": "We are investigating this issue and will provide an update soon."
+}
+
+### Update Feedback Status (Arabic Response)
+PATCH {{baseUrl}}/feedback/2/status
+Authorization: Bearer {{authToken}}
+Accept-Language: ar
+Content-Type: application/json
+
+{
+  "status": "resolved",
+  "admin_response": "تم حل هذه المشكلة في الإصدار الجديد من التطبيق. يرجى تحديث التطبيق إلى أحدث إصدار."
+}
+
+### Get Feedback Statistics (Admin Only)
+GET {{baseUrl}}/feedback/stats/dashboard
+Authorization: Bearer {{authToken}}
+
+### Delete Feedback (Super Admin Only)
+DELETE {{baseUrl}}/feedback/1
+Authorization: Bearer {{authToken}}
+
+###
+# File Upload Test (Multipart Form Data)
+# Note: This requires manual testing with actual files
+###
+
+### Submit Feedback with File Attachment
+POST {{baseUrl}}/feedback
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type"
+
+bug
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+app
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="title"
+
+UI Bug with Screenshot
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+There's a UI bug where the button overlaps with text. I've attached a screenshot showing the issue.
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="priority"
+
+medium
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="attachments"; filename="screenshot.png"
+Content-Type: image/png
+
+< ./test-files/screenshot.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+# Language Testing
+###
+
+### Test Arabic Language Detection
+GET {{baseUrl}}/feedback/options
+Accept-Language: ar-SA,ar;q=0.9,en;q=0.8
+
+### Test English Language Detection
+GET {{baseUrl}}/feedback/options
+Accept-Language: en-US,en;q=0.9
+
+### Test Language Override with Query Parameter
+GET {{baseUrl}}/feedback/options?lang=ar
+Accept-Language: en-US,en;q=0.9
+
+###
+# Error Testing
+###
+
+### Test Invalid Feedback Type
+POST {{baseUrl}}/feedback
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "type": "invalid_type",
+  "title": "Test",
+  "description": "This should fail validation"
+}
+
+### Test Missing Required Fields
+POST {{baseUrl}}/feedback
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "type": "bug"
+}
+
+### Test Unauthorized Access
+GET {{baseUrl}}/feedback
+
+### Test Admin Endpoint Without Admin Role
+GET {{baseUrl}}/feedback/stats/dashboard
+Authorization: Bearer {{authToken}}
+
+###
+# Performance Testing
+###
+
+### Test Pagination
+GET {{baseUrl}}/feedback?page=1&limit=5
+Authorization: Bearer {{authToken}}
+
+### Test Filtering
+GET {{baseUrl}}/feedback?type=bug&status=open&priority=high
+Authorization: Bearer {{authToken}}
+
+### Test Sorting
+GET {{baseUrl}}/feedback?sort_by=created_at&sort_order=DESC
+Authorization: Bearer {{authToken}}

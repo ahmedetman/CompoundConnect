@@ -1,0 +1,62 @@
+{
+  "feedback": {
+    "submitted_successfully": "Feedback submitted successfully",
+    "failed_to_submit": "Failed to submit feedback",
+    "not_found": "Feedback not found",
+    "access_denied": "Access denied",
+    "admin_privileges_required": "Access denied. Admin privileges required.",
+    "super_admin_privileges_required": "Access denied. Super admin privileges required.",
+    "status_updated_successfully": "Feedback status updated successfully",
+    "failed_to_update_status": "Failed to update feedback status",
+    "failed_to_retrieve": "Failed to retrieve feedback",
+    "failed_to_retrieve_list": "Failed to retrieve feedback list",
+    "failed_to_retrieve_stats": "Failed to retrieve feedback statistics",
+    "deleted_successfully": "Feedback deleted successfully",
+    "failed_to_delete": "Failed to delete feedback",
+    "invalid_file_type": "Only images, PDFs, documents, and log files are allowed"
+  },
+  "validation": {
+    "type_required": "Feedback type is required",
+    "type_invalid": "Feedback type must be one of: bug, feature_request, improvement, general",
+    "category_invalid": "Category must be one of: app, qr_codes, payments, notifications, security, ui_ux, performance, other",
+    "title_required": "Title is required",
+    "title_min_length": "Title must be at least 5 characters long",
+    "title_max_length": "Title cannot exceed 200 characters",
+    "description_required": "Description is required",
+    "description_min_length": "Description must be at least 10 characters long",
+    "description_max_length": "Description cannot exceed 2000 characters",
+    "priority_invalid": "Priority must be one of: low, medium, high, critical",
+    "status_required": "Status is required",
+    "status_invalid": "Status must be one of: open, in_progress, resolved, closed, duplicate",
+    "admin_response_max_length": "Admin response cannot exceed 1000 characters"
+  },
+  "types": {
+    "bug": "Bug Report",
+    "feature_request": "Feature Request",
+    "improvement": "Improvement Suggestion",
+    "general": "General Feedback"
+  },
+  "categories": {
+    "app": "Mobile App",
+    "qr_codes": "QR Codes",
+    "payments": "Payments",
+    "notifications": "Notifications",
+    "security": "Security",
+    "ui_ux": "User Interface",
+    "performance": "Performance",
+    "other": "Other"
+  },
+  "priorities": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "critical": "Critical"
+  },
+  "statuses": {
+    "open": "Open",
+    "in_progress": "In Progress",
+    "resolved": "Resolved",
+    "closed": "Closed",
+    "duplicate": "Duplicate"
+  }
+}
