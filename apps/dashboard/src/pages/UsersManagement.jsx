@@ -17,7 +17,22 @@ const UsersManagement = () => {
     try {
       setLoading(true);
       const response = await usersAPI.getUsers();
-      setUsers(response.data.users || []);
+      const usersData = response.data.data.users || [];
+
+      // Transform API data to match component expectations
+      const transformedUsers = usersData.map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        unit: user.units, // API uses 'units' instead of 'unit'
+        status: user.is_active === 1 ? 'active' : 'inactive', // Convert is_active to status
+        created_at: user.created_at,
+        profile_picture_url: user.profile_picture_url,
+        unit_count: user.unit_count
+      }));
+
+      setUsers(transformedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');
