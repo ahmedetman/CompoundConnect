@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Users, MoreHorizontal } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Users, MoreHorizontal, Building2 } from 'lucide-react';
 import { unitsAPI } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -20,7 +20,28 @@ const UnitsManagement = () => {
     try {
       setLoading(true);
       const response = await unitsAPI.getUnits();
-      setUnits(response.data.units || []);
+      const unitsData = response.data.data.units || [];
+
+      // Transform API data to match component expectations
+      const transformedUnits = unitsData.map(unit => ({
+        id: unit.id,
+        unit_number: unit.unit_number,
+        created_at: unit.created_at,
+        payment_status: unit.payment_status,
+        // Transform owners string to users array
+        users: unit.owners && unit.owners !== null
+          ? unit.owners.split(', ').map((ownerName, index) => ({
+              id: index + 1,
+              name: ownerName,
+              relationship: 'owner'
+            }))
+          : [],
+        owner_count: unit.owner_count,
+        paid_services: unit.paid_services,
+        total_services: unit.total_services
+      }));
+
+      setUnits(transformedUnits);
     } catch (error) {
       console.error('Error fetching units:', error);
       toast.error('Failed to load units');
@@ -50,7 +71,7 @@ const UnitsManagement = () => {
           unit_number: '3C',
           users: [],
           payment_status: 'overdue',
-          created_at: '2024-02-01T09:15:00Z'
+          created_at: '2024-01-25T09:15:00Z'
         }
       ]);
     } finally {
