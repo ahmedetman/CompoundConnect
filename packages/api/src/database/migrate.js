@@ -1,6 +1,45 @@
 const db = require('./connection');
 
+const resetDatabase = async () => {
+  console.log('🗑️  Resetting database...');
+  
+  try {
+    // Drop all tables in reverse order to handle foreign key constraints
+    const tables = [
+      'qr_stats',
+      'dashboard_stats', 
+      'reports',
+      'settings',
+      'feedback',
+      'refresh_tokens',
+      'news',
+      'personnel_invites',
+      'scan_logs',
+      'qr_codes',
+      'payments',
+      'services',
+      'unit_users',
+      'units',
+      'users',
+      'seasons',
+      'compounds'
+    ];
+
+    for (const table of tables) {
+      await db.run(`DROP TABLE IF EXISTS ${table}`);
+      console.log(`  ✓ Dropped table: ${table}`);
+    }
+    
+    console.log('✅ Database reset completed');
+  } catch (error) {
+    console.error('❌ Error resetting database:', error);
+    throw error;
+  }
+};
+
 const createTables = async () => {
+  console.log('🏗️  Creating database tables...');
+  
   try {
     // Compounds table
     await db.run(`
@@ -12,6 +51,7 @@ const createTables = async () => {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log('  ✓ Created compounds table');
 
     // Seasons table
     await db.run(`
@@ -27,6 +67,7 @@ const createTables = async () => {
         FOREIGN KEY (compound_id) REFERENCES compounds(id) ON DELETE CASCADE
       )
     `);
+    console.log('  ✓ Created seasons table');
 
     // Users table
     await db.run(`
@@ -45,6 +86,7 @@ const createTables = async () => {
         FOREIGN KEY (compound_id) REFERENCES compounds(id) ON DELETE CASCADE
       )
     `);
+    console.log('  ✓ Created users table');
 
     // Units table
     await db.run(`
@@ -58,6 +100,7 @@ const createTables = async () => {
         UNIQUE(compound_id, unit_number)
       )
     `);
+    console.log('  ✓ Created units table');
 
     // Unit Users junction table (Many-to-Many)
     await db.run(`
@@ -72,6 +115,7 @@ const createTables = async () => {
         UNIQUE(unit_id, user_id)
       )
     `);
+    console.log('  ✓ Created unit_users table');
 
     // Services table
     await db.run(`
@@ -87,6 +131,7 @@ const createTables = async () => {
         FOREIGN KEY (compound_id) REFERENCES compounds(id) ON DELETE CASCADE
       )
     `);
+    console.log('  ✓ Created services table');
 
     // Payments table
     await db.run(`
@@ -107,6 +152,7 @@ const createTables = async () => {
         UNIQUE(unit_id, service_id, season_id)
       )
     `);
+    console.log('  ✓ Created payments table');
 
     // QR Codes table
     await db.run(`
@@ -133,6 +179,7 @@ const createTables = async () => {
         FOREIGN KEY (compound_id) REFERENCES compounds(id) ON DELETE CASCADE
       )
     `);
+    console.log('  ✓ Created qr_codes table');
 
     // Scan Logs table
     await db.run(`
@@ -152,6 +199,7 @@ const createTables = async () => {
         FOREIGN KEY (compound_id) REFERENCES compounds(id) ON DELETE CASCADE
       )
     `);
+    console.log('  ✓ Created scan_logs table');
 
     // Personnel Invite Codes table
     await db.run(`
@@ -171,6 +219,7 @@ const createTables = async () => {
         FOREIGN KEY (used_by_user_id) REFERENCES users(id) ON DELETE SET NULL
       )
     `);
+    console.log('  ✓ Created personnel_invites table');
 
     // News and Alerts table
     await db.run(`
@@ -191,6 +240,7 @@ const createTables = async () => {
         FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
+    console.log('  ✓ Created news table');
 
     // Refresh Tokens table
     await db.run(`
@@ -204,6 +254,7 @@ const createTables = async () => {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
+    console.log('  ✓ Created refresh_tokens table');
 
     // Feedback table
     await db.run(`
@@ -232,44 +283,142 @@ const createTables = async () => {
         FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE SET NULL
       )
     `);
+    console.log('  ✓ Created feedback table');
+
+    // Settings table for compound-wide settings
+    await db.run(`
+      CREATE TABLE IF NOT EXISTS settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        compound_id INTEGER NOT NULL,
+        setting_key TEXT NOT NULL,
+        setting_value TEXT,
+        setting_type TEXT DEFAULT 'string' CHECK (setting_type IN ('string', 'number', 'boolean', 'json')),
+        description TEXT,
+        is_public BOOLEAN DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (compound_id) REFERENCES compounds(id) ON DELETE CASCADE,
+        UNIQUE(compound_id, setting_key)
+      )
+    `);
+    console.log('  ✓ Created settings table');
+
+    // Reports table for storing generated reports
+    await db.run(`
+      CREATE TABLE IF NOT EXISTS reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        compound_id INTEGER NOT NULL,
+        report_type TEXT NOT NULL CHECK (report_type IN ('payments', 'qr_usage', 'user_activity', 'feedback', 'security', 'financial')),
+        report_name TEXT NOT NULL,
+        report_data TEXT NOT NULL, -- JSON data
+        generated_by INTEGER NOT NULL,
+        file_path TEXT,
+        file_size INTEGER,
+        is_scheduled BOOLEAN DEFAULT 0,
+        scheduled_frequency TEXT CHECK (scheduled_frequency IN ('daily', 'weekly', 'monthly', 'quarterly', 'yearly')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (compound_id) REFERENCES compounds(id) ON DELETE CASCADE,
+        FOREIGN KEY (generated_by) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('  ✓ Created reports table');
+
+    // Dashboard stats cache table
+    await db.run(`
+      CREATE TABLE IF NOT EXISTS dashboard_stats (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        compound_id INTEGER NOT NULL,
+        stat_type TEXT NOT NULL,
+        stat_value TEXT NOT NULL, -- JSON data
+        calculated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expires_at DATETIME,
+        FOREIGN KEY (compound_id) REFERENCES compounds(id) ON DELETE CASCADE,
+        UNIQUE(compound_id, stat_type)
+      )
+    `);
+    console.log('  ✓ Created dashboard_stats table');
+
+    // QR code stats table
+    await db.run(`
+      CREATE TABLE IF NOT EXISTS qr_stats (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        compound_id INTEGER NOT NULL,
+        date DATE NOT NULL,
+        total_codes INTEGER DEFAULT 0,
+        active_codes INTEGER DEFAULT 0,
+        expired_codes INTEGER DEFAULT 0,
+        total_scans INTEGER DEFAULT 0,
+        successful_scans INTEGER DEFAULT 0,
+        failed_scans INTEGER DEFAULT 0,
+        unique_users INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (compound_id) REFERENCES compounds(id) ON DELETE CASCADE,
+        UNIQUE(compound_id, date)
+      )
+    `);
+    console.log('  ✓ Created qr_stats table');
 
     // Create indexes for better performance
-    await db.run('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_users_compound ON users(compound_id)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_qr_codes_hash ON qr_codes(code_hash)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_qr_codes_active ON qr_codes(is_active)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_scan_logs_qr_code ON scan_logs(qr_code_id)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_scan_logs_scanner ON scan_logs(scanner_user_id)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_payments_unit ON payments(unit_id)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_payments_season ON payments(season_id)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_seasons_compound ON seasons(compound_id)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_units_compound ON units(compound_id)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_feedback_user ON feedback(user_id)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_feedback_compound ON feedback(compound_id)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback(status)');
-    await db.run('CREATE INDEX IF NOT EXISTS idx_feedback_type ON feedback(type)');
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_users_compound ON users(compound_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_qr_codes_compound ON qr_codes(compound_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_qr_codes_user ON qr_codes(user_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_qr_codes_active ON qr_codes(is_active, valid_to)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_scan_logs_qr_code ON scan_logs(qr_code_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_scan_logs_date ON scan_logs(scanned_at)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_payments_unit ON payments(unit_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_payments_season ON payments(season_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_news_compound ON news(compound_id, is_published)`);
+    console.log('  ✓ Created database indexes');
 
-    console.log('Database tables created successfully');
+    console.log('✅ Database tables created successfully');
   } catch (error) {
-    console.error('Error creating tables:', error);
+    console.error('❌ Error creating tables:', error);
     throw error;
   }
 };
 
-const migrate = async () => {
+const migrate = async (reset = false) => {
   try {
+    console.log('🚀 Starting database migration...');
+    
+    // Connect to database first
     await db.connect();
+    
+    if (reset) {
+      await resetDatabase();
+    }
+    
     await createTables();
-    console.log('Migration completed successfully');
+    
+    console.log('✅ Database migration completed successfully!');
   } catch (error) {
-    console.error('Migration failed:', error);
+    console.error('❌ Migration failed:', error);
     process.exit(1);
+  } finally {
+    // Close database connection
+    await db.close();
   }
 };
 
-// Run migration if this file is executed directly
+// Check if this script is being run directly
 if (require.main === module) {
-  migrate();
+  const args = process.argv.slice(2);
+  const shouldReset = args.includes('--reset') || args.includes('-r');
+  
+  if (shouldReset) {
+    console.log('⚠️  Reset flag detected - this will delete all existing data!');
+  }
+  
+  migrate(shouldReset)
+    .then(() => {
+      console.log('🎉 Migration script completed');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('💥 Migration script failed:', error);
+      process.exit(1);
+    });
 }
 
-module.exports = { createTables, migrate };
+module.exports = { migrate, resetDatabase, createTables };

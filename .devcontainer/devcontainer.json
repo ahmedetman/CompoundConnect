@@ -23,7 +23,8 @@
         "ms-vscode.vscode-sqlite",
         "ms-ceintl.vscode-language-pack-ar",
         "formulahendry.auto-rename-tag",
-        "christian-kohler.path-intellisense"
+        "christian-kohler.path-intellisense",
+        "ms-vscode.vscode-react"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
@@ -47,7 +48,7 @@
   "forwardPorts": [3000, 3001, 8081, 19000, 19001, 19002, 19006],
   "portsAttributes": {
     "3000": { 
-      "label": "Web Dashboard",
+      "label": "Dashboard (React)",
       "onAutoForward": "notify"
     },
     "3001": { 
@@ -76,9 +77,9 @@
     }
   },
 
-  "postCreateCommand": "npm install -g @expo/cli && npm install && cd packages/api && npm install && cd ../../apps/mobile && npm install",
+  "postCreateCommand": "npm install -g @expo/cli && ./dev-server.sh install",
 
-  "postStartCommand": "cd packages/api && npm run migrate && cd ../.. && nohup npm run dev > dev.log 2>&1 & echo 'API Server and Mobile App starting in background. Check dev.log for output.'",
+  "postStartCommand": "cd packages/api && npm run migrate && cd ../.. && ./dev-server.sh start",
 
   "remoteUser": "node",
 

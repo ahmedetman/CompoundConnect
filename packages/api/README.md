@@ -2,7 +2,7 @@
 
 A comprehensive backend API for compound access and management system built with Node.js, Express, and SQLite.
 
-## Features
+## 🚀 Features
 
 - **Multi-tenant Architecture**: Support for multiple compounds with isolated data
 - **QR Code Management**: Generate, validate, and manage QR codes for visitors and residents
@@ -11,19 +11,24 @@ A comprehensive backend API for compound access and management system built with
 - **Real-time Notifications**: Push notifications for QR scans and important updates
 - **Comprehensive Reporting**: Dashboard statistics and detailed reports
 - **Season Management**: Configure compound seasons and automatic QR invalidation
+- **News & Alerts**: Publish announcements and alerts to residents
+- **Feedback System**: Handle user feedback and support requests
+- **Settings Management**: Configurable compound-wide settings
 
-## Technology Stack
+## 🛠️ Technology Stack
 
-- **Runtime**: Node.js
+- **Runtime**: Node.js 18+
 - **Framework**: Express.js
 - **Database**: SQLite3
-- **Authentication**: JWT (JSON Web Tokens)
+- **Authentication**: JWT (JSON Web Tokens) with refresh tokens
 - **Validation**: Joi
 - **QR Codes**: qrcode library
 - **Push Notifications**: Firebase Cloud Messaging
 - **Security**: Helmet, CORS, Rate Limiting
+- **Password Hashing**: bcrypt
+- **Cron Jobs**: node-cron
 
-## Installation
+## 📦 Installation
 
 1. Clone the repository and navigate to the API directory:
 ```bash
@@ -45,171 +50,365 @@ cp .env.example .env
 NODE_ENV=development
 PORT=3001
 DATABASE_PATH=./data/compound_connect.db
-JWT_SECRET=your-super-secret-jwt-key
-JWT_REFRESH_SECRET=your-super-secret-refresh-key
-# ... other configurations
+JWT_SECRET=your-super-secret-jwt-key-min-32-chars
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-min-32-chars
+JWT_EXPIRES_IN=1h
+JWT_REFRESH_EXPIRES_IN=7d
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:19006
+FIREBASE_PROJECT_ID=your-firebase-project-id
+FIREBASE_PRIVATE_KEY=your-firebase-private-key
+FIREBASE_CLIENT_EMAIL=your-firebase-client-email
 ```
 
-5. Initialize the database:
+5. Run database migrations:
 ```bash
 npm run migrate
 ```
 
-6. Seed sample data (optional):
+6. Seed the database with sample data:
 ```bash
 npm run seed
 ```
 
-## Usage
-
-### Development
+7. Start the development server:
 ```bash
 npm run dev
 ```
 
-### Production
-```bash
-npm start
-```
+The API will be available at `http://localhost:3001`
 
-### Database Operations
+## 🗄️ Database Management
+
+### Migrations
 ```bash
 # Run migrations
 npm run migrate
 
-# Seed sample data
-npm run seed
+# Reset database and run migrations
+npm run migrate -- --reset
 ```
 
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register-personnel` - Register personnel with invite code
-- `POST /api/auth/refresh-token` - Refresh access token
-- `POST /api/auth/logout` - User logout
-
-### QR Codes
-- `POST /api/qrcodes/visitor` - Create visitor QR code
-- `GET /api/qrcodes/my` - Get user's personal QR codes
-- `GET /api/qrcodes/visitors` - Get user's visitor QR codes
-- `POST /api/qrcodes/validate` - Validate QR code (Critical endpoint)
-- `PUT /api/qrcodes/:id/invalidate` - Invalidate QR code
-
-### Management
-- `GET /api/management/units` - Get all units with payment status
-- `POST /api/management/units` - Create new unit
-- `GET /api/management/units/:id` - Get unit details
-- `POST /api/management/units/:id/assign-user` - Assign user to unit
-- `POST /api/management/units/:id/payments` - Update payment status
-- `GET /api/management/personnel` - Get all personnel
-- `POST /api/management/personnel/invite` - Generate personnel invite
-- `PUT /api/management/personnel/:id/revoke` - Revoke personnel access
-- `GET /api/management/seasons` - Get all seasons
-- `POST /api/management/seasons` - Create new season
-- `PUT /api/management/seasons/:id` - Update season
-- `GET /api/management/news` - Get all news
-- `POST /api/management/news` - Create news
-- `PUT /api/management/news/:id` - Update news
-- `DELETE /api/management/news/:id` - Delete news
-
-### Users
-- `GET /api/users/profile` - Get current user profile
-- `GET /api/users/news` - Get compound news for user
-- `GET /api/users/payments` - Get user's payment status
-- `GET /api/users/scan-history` - Get user's QR scan history
-- `PUT /api/users/device-token` - Update device token for push notifications
-
-### Reports
-- `GET /api/reports/dashboard` - Get dashboard statistics
-- `GET /api/reports/payments-due` - Get payments due report
-- `GET /api/reports/visitor-log` - Get visitor traffic report
-- `GET /api/reports/scan-activity` - Get scan activity report
-
-## Database Schema
-
-### Core Tables
-- `compounds` - Compound information
-- `seasons` - Compound seasons with start/end dates
-- `users` - All system users with roles
-- `units` - Compound units
-- `unit_users` - Many-to-many relationship between units and users
-- `services` - Available services (maintenance, pool access, etc.)
-- `payments` - Payment tracking for units and services
-- `qr_codes` - QR code data and metadata
-- `scan_logs` - QR code scan history
-- `personnel_invites` - Personnel invitation codes
-- `news` - News and alerts
-- `refresh_tokens` - JWT refresh token management
-
-## Security Features
-
-- JWT-based authentication with refresh tokens
-- Role-based access control (RBAC)
-- Rate limiting on sensitive endpoints
-- Input validation using Joi
-- SQL injection prevention
-- CORS configuration
-- Helmet security headers
-- Password hashing with bcrypt
-
-## Scheduled Tasks
-
-The API includes automated cron jobs for:
-- Cleaning expired refresh tokens (daily at 2 AM)
-- Checking for expiring seasons (daily at 9 AM)
-- Invalidating expired QR codes (hourly)
-- Updating overdue payments (daily at 1 AM)
-
-## Push Notifications
-
-Integrated with Firebase Cloud Messaging for:
-- QR code scan notifications to owners
-- Season expiry notifications to management
-- News and alert notifications to residents
-- Payment reminder notifications
-
-## Error Handling
-
-Comprehensive error handling with:
-- Global error middleware
-- Custom error classes
-- Structured error responses
-- Logging for debugging
-- Graceful degradation
-
-## Testing
-
+### Seeding
 ```bash
-npm test
+# Seed with sample data
+npm run seed
+
+# Clear existing data and reseed
+npm run seed -- --reset
 ```
 
-## Sample Login Credentials
+## 🔐 Authentication
 
-After running the seed script, you can use these credentials:
+The API uses JWT-based authentication with refresh tokens:
 
+1. **Login**: `POST /api/auth/login`
+2. **Refresh Token**: `POST /api/auth/refresh-token`
+3. **Logout**: `POST /api/auth/logout`
+
+### Sample Login Credentials (after seeding)
 - **Super Admin**: `superadmin@compoundconnect.com` / `password123`
 - **Manager**: `manager@seaside.com` / `password123`
-- **Owner 1**: `ahmed@example.com` / `password123`
-- **Owner 2**: `sarah@example.com` / `password123`
+- **Owner**: `ahmed@example.com` / `password123`
 - **Security**: `security@seaside.com` / `password123`
 
-## Health Check
+## 📚 API Endpoints
 
-The API provides a health check endpoint at `/health` that returns:
-- Server status
-- Uptime
-- Environment information
-- Timestamp
+### Authentication Routes (`/api/auth`)
+- `POST /login` - User login
+- `POST /logout` - User logout
+- `POST /refresh-token` - Refresh access token
+- `POST /register-personnel` - Register personnel with invite code
 
-## Contributing
+### Management Routes (`/api/management`)
 
-1. Follow the existing code style and patterns
-2. Add appropriate validation for new endpoints
-3. Include error handling
-4. Update documentation
-5. Add tests for new functionality
+#### Units
+- `GET /units` - Get all units with pagination and filters
+- `POST /units` - Create new unit
+- `PUT /units/:id` - Update unit
+- `DELETE /units/:id` - Delete unit
+- `GET /units/:id` - Get unit by ID
 
-## License
+#### Users
+- `GET /users` - Get all users
+- `POST /users` - Create new user
+- `PUT /users/:id` - Update user
+- `DELETE /users/:id` - Delete user
 
-MIT License
+#### Personnel
+- `GET /personnel` - Get all personnel
+- `POST /personnel/invite` - Generate personnel invite code
+- `PUT /personnel/:id/revoke` - Revoke personnel access
+
+#### Seasons
+- `GET /seasons` - Get all seasons
+- `POST /seasons` - Create new season
+- `PUT /seasons/:id` - Update season
+- `PUT /seasons/:id/activate` - Activate season
+
+#### Services
+- `GET /services` - Get all services
+- `POST /services` - Create new service
+- `PUT /services/:id` - Update service
+- `DELETE /services/:id` - Delete service
+
+#### Payments
+- `GET /payments` - Get payment records
+- `PUT /payments/:unitId/:serviceId/:seasonId` - Update payment status
+
+#### News
+- `GET /news` - Get all news with filters
+- `POST /news` - Create news item
+- `PUT /news/:id` - Update news item
+- `DELETE /news/:id` - Delete news item
+
+#### Settings
+- `GET /settings` - Get compound settings
+- `PUT /settings` - Update settings
+
+### QR Code Routes (`/api/qrcodes`)
+- `POST /visitor` - Create visitor QR code
+- `GET /my` - Get personal QR codes
+- `GET /visitors` - Get visitor QR codes
+- `POST /validate` - Validate QR code (Critical endpoint)
+- `PUT /:id/invalidate` - Invalidate QR code
+- `GET /all` - Get all QR codes (Admin only)
+- `GET /stats` - Get QR code statistics
+
+### User Routes (`/api/users`)
+- `GET /profile` - Get user profile
+- `PUT /profile` - Update user profile
+
+### Reports Routes (`/api/reports`)
+- `GET /dashboard` - Dashboard statistics
+- `GET /payments-due` - Payments due report
+- `GET /qr-usage` - QR code usage report
+- `GET /user-activity` - User activity report
+
+### Feedback Routes (`/api/feedback`)
+- `GET /` - Get feedback with filters
+- `POST /` - Submit new feedback
+- `PUT /:id` - Update feedback
+- `DELETE /:id` - Delete feedback
+- `PUT /:id/respond` - Respond to feedback
+
+## 🔒 Security Features
+
+### Authentication & Authorization
+- JWT tokens with configurable expiration
+- Refresh token rotation
+- Role-based access control (RBAC)
+- Password hashing with bcrypt
+
+### API Security
+- Rate limiting on all endpoints
+- CORS configuration
+- Helmet security headers
+- Input validation with Joi
+- SQL injection prevention
+- XSS protection
+
+### Data Protection
+- Sensitive data encryption
+- Secure token storage
+- Audit logging for all actions
+- Automatic cleanup of expired tokens
+
+## 📊 Monitoring & Logging
+
+### Health Checks
+- `GET /health` - Basic health check
+- `GET /api/health` - Detailed API health check
+
+### Logging
+- Request/response logging
+- Error logging with stack traces
+- Security event logging
+- Performance monitoring
+
+## 🔧 Configuration
+
+### Environment Variables
+```env
+# Server Configuration
+NODE_ENV=development|production
+PORT=3001
+HOST=localhost
+
+# Database
+DATABASE_PATH=./data/compound_connect.db
+
+# JWT Configuration
+JWT_SECRET=your-jwt-secret-min-32-characters
+JWT_REFRESH_SECRET=your-refresh-secret-min-32-characters
+JWT_EXPIRES_IN=1h
+JWT_REFRESH_EXPIRES_IN=7d
+
+# CORS
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:19006
+
+# Firebase (for push notifications)
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_PRIVATE_KEY=your-private-key
+FIREBASE_CLIENT_EMAIL=your-client-email
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+AUTH_RATE_LIMIT_MAX=5
+QR_VALIDATION_RATE_LIMIT_MAX=50
+```
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run specific test file
+npm test -- --testPathPattern=auth.test.js
+```
+
+## 📈 Performance
+
+### Database Optimization
+- Proper indexing on frequently queried columns
+- Query optimization for complex joins
+- Connection pooling
+- Prepared statements
+
+### Caching
+- Dashboard statistics caching
+- QR code validation caching
+- Settings caching
+
+### Rate Limiting
+- General API rate limiting: 100 requests per 15 minutes
+- Authentication rate limiting: 5 requests per 15 minutes
+- QR validation rate limiting: 50 requests per minute
+
+## 🚀 Deployment
+
+### Production Setup
+1. Set `NODE_ENV=production`
+2. Use strong JWT secrets (min 32 characters)
+3. Configure proper CORS origins
+4. Set up SSL/TLS certificates
+5. Configure reverse proxy (nginx)
+6. Set up monitoring and logging
+7. Configure database backups
+
+### Docker Deployment
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3001
+CMD ["npm", "start"]
+```
+
+### Environment-specific Configurations
+- **Development**: Debug logging, hot reloading
+- **Staging**: Production-like setup with test data
+- **Production**: Optimized performance, security hardening
+
+## 🔄 Cron Jobs
+
+The API includes automated tasks:
+- **Token Cleanup**: Remove expired refresh tokens (daily)
+- **QR Code Cleanup**: Mark expired QR codes as inactive (hourly)
+- **Statistics Update**: Update dashboard statistics (every 15 minutes)
+- **Log Rotation**: Archive old logs (weekly)
+
+## 📝 API Response Format
+
+All API responses follow a consistent format:
+
+### Success Response
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": {
+    // Response data
+  }
+}
+```
+
+### Error Response
+```json
+{
+  "success": false,
+  "message": "Error description",
+  "error": {
+    "code": "ERROR_CODE",
+    "details": "Detailed error information"
+  }
+}
+```
+
+### Paginated Response
+```json
+{
+  "success": true,
+  "message": "Data retrieved successfully",
+  "data": {
+    "items": [...],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 100,
+      "pages": 10
+    }
+  }
+}
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Error**
+   - Check if database file exists
+   - Verify file permissions
+   - Run migrations: `npm run migrate`
+
+2. **JWT Token Issues**
+   - Verify JWT secrets are set
+   - Check token expiration
+   - Ensure secrets are at least 32 characters
+
+3. **CORS Issues**
+   - Check `ALLOWED_ORIGINS` environment variable
+   - Verify frontend URL is included
+
+4. **Rate Limiting**
+   - Check rate limit configuration
+   - Verify client IP is not blocked
+
+### Debug Mode
+Set `NODE_ENV=development` for detailed error messages and debug logging.
+
+## 📞 Support
+
+For API-specific issues:
+1. Check the logs in `./logs/` directory
+2. Verify environment configuration
+3. Test with provided sample credentials
+4. Check database integrity with `npm run migrate`
+
+## 🤝 Contributing
+
+1. Follow the existing code style
+2. Add tests for new features
+3. Update documentation
+4. Ensure all tests pass
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.

@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# CompoundConnect Development Environment Setup Script
-# This script sets up the development environment for the feedback system
+# CompoundConnect Development Setup Script
+# This script sets up the development environment for CompoundConnect
 
-set -e
+set -e  # Exit on any error
 
-echo "🚀 Setting up CompoundConnect Development Environment"
-echo "=================================================="
+echo "🚀 CompoundConnect Development Setup"
+echo "===================================="
 
 # Colors for output
 RED='\033[0;31m'
@@ -33,170 +33,193 @@ print_error() {
 }
 
 # Check if Node.js is installed
-print_status "Checking Node.js installation..."
-if command -v node &> /dev/null; then
-    NODE_VERSION=$(node --version)
-    print_success "Node.js is installed: $NODE_VERSION"
-else
-    print_error "Node.js is not installed. Please install Node.js 18 or higher."
-    exit 1
-fi
-
-# Check if npm is installed
-print_status "Checking npm installation..."
-if command -v npm &> /dev/null; then
-    NPM_VERSION=$(npm --version)
-    print_success "npm is installed: $NPM_VERSION"
-else
-    print_error "npm is not installed. Please install npm."
-    exit 1
-fi
-
-# Install root dependencies
-print_status "Installing root dependencies..."
-npm install
-print_success "Root dependencies installed"
-
-# Install API dependencies
-print_status "Installing API dependencies..."
-cd packages/api
-npm install
-print_success "API dependencies installed"
-
-# Create necessary directories
-print_status "Creating necessary directories..."
-mkdir -p data
-mkdir -p uploads/feedback
-mkdir -p logs
-print_success "Directories created"
-
-# Set up database
-print_status "Setting up database..."
-if [ ! -f "data/compound_connect.db" ]; then
-    npm run migrate
-    print_success "Database created and migrated"
-else
-    print_warning "Database already exists. Skipping migration."
-fi
-
-# Check environment file
-print_status "Checking environment configuration..."
-if [ ! -f ".env" ]; then
-    if [ -f ".env.example" ]; then
-        cp .env.example .env
-        print_warning "Created .env file from .env.example. Please update with your configuration."
-    else
-        print_error ".env.example file not found. Please create .env file manually."
+check_node() {
+    if ! command -v node &> /dev/null; then
+        print_error "Node.js is not installed. Please install Node.js 18+ and try again."
+        exit 1
     fi
-else
-    print_success "Environment file exists"
-fi
+    
+    NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+    if [ "$NODE_VERSION" -lt 18 ]; then
+        print_error "Node.js version 18+ is required. Current version: $(node --version)"
+        exit 1
+    fi
+    
+    print_success "Node.js $(node --version) is installed"
+}
 
-# Set proper permissions for uploads directory
-print_status "Setting permissions for uploads directory..."
-chmod 755 uploads/feedback
-print_success "Permissions set"
-
-# Go back to root
-cd ../..
-
-# Install mobile app dependencies (if exists)
-if [ -d "apps/mobile" ]; then
-    print_status "Installing mobile app dependencies..."
-    cd apps/mobile
+# Install dependencies
+install_dependencies() {
+    print_status "Installing root dependencies..."
     npm install
-    print_success "Mobile app dependencies installed"
-    cd ../..
-fi
+    
+    print_status "Installing API dependencies..."
+    cd packages/api && npm install && cd ../..
+    
+    print_status "Installing Dashboard dependencies..."
+    cd apps/dashboard && npm install && cd ../..
+    
+    print_status "Installing Mobile dependencies..."
+    cd apps/mobile && npm install && cd ../..
+    
+    print_success "All dependencies installed"
+}
 
-# Create development scripts
-print_status "Creating development scripts..."
+# Setup environment files
+setup_env_files() {
+    print_status "Setting up environment files..."
+    
+    # API environment file
+    if [ ! -f "packages/api/.env" ]; then
+        print_status "Creating API .env file..."
+        cat > packages/api/.env << EOF
+NODE_ENV=development
+PORT=3001
+DATABASE_PATH=./data/compound_connect.db
+JWT_SECRET=your-super-secret-jwt-key-must-be-at-least-32-characters-long
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-must-be-at-least-32-characters-long
+JWT_EXPIRES_IN=1h
+JWT_REFRESH_EXPIRES_IN=7d
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:19006
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+AUTH_RATE_LIMIT_MAX=5
+QR_VALIDATION_RATE_LIMIT_MAX=50
+EOF
+        print_success "Created packages/api/.env"
+    else
+        print_warning "packages/api/.env already exists, skipping..."
+    fi
+    
+    # Dashboard environment file
+    if [ ! -f "apps/dashboard/.env" ]; then
+        print_status "Creating Dashboard .env file..."
+        cat > apps/dashboard/.env << EOF
+VITE_API_BASE_URL=http://localhost:3001/api
+EOF
+        print_success "Created apps/dashboard/.env"
+    else
+        print_warning "apps/dashboard/.env already exists, skipping..."
+    fi
+}
 
-# Create start script
-cat > start-dev.sh << 'EOF'
+# Setup database
+setup_database() {
+    print_status "Setting up database..."
+    
+    # Create data directory if it doesn't exist
+    mkdir -p packages/api/data
+    
+    # Run migrations
+    print_status "Running database migrations..."
+    cd packages/api && npm run migrate && cd ../..
+    
+    # Seed database
+    print_status "Seeding database with sample data..."
+    cd packages/api && npm run seed && cd ../..
+    
+    print_success "Database setup completed"
+}
+
+# Create startup script
+create_startup_script() {
+    print_status "Creating startup script..."
+    
+    cat > start-dev.sh << 'EOF'
 #!/bin/bash
-echo "🚀 Starting CompoundConnect Development Servers"
-echo "=============================================="
 
-# Start API server in background
-echo "Starting API server on port 3001..."
+# Start all development servers
+echo "🚀 Starting CompoundConnect Development Servers..."
+
+# Function to kill background processes on exit
+cleanup() {
+    echo "🛑 Stopping all servers..."
+    kill $(jobs -p) 2>/dev/null
+    exit
+}
+
+# Set up trap to cleanup on script exit
+trap cleanup SIGINT SIGTERM
+
+# Start API server
+echo "📡 Starting API server on http://localhost:3001..."
 cd packages/api && npm run dev &
 API_PID=$!
 
 # Wait a moment for API to start
 sleep 3
 
-# Start mobile app if it exists
-if [ -d "../../apps/mobile" ]; then
-    echo "Starting mobile app..."
-    cd ../../apps/mobile && npm start &
-    MOBILE_PID=$!
-fi
+# Start Dashboard
+echo "🖥️  Starting Dashboard on http://localhost:3000..."
+cd apps/dashboard && npm run dev &
+DASHBOARD_PID=$!
+
+# Start Mobile app (optional)
+# echo "📱 Starting Mobile app on http://localhost:19006..."
+# cd apps/mobile && npm start &
+# MOBILE_PID=$!
 
 echo ""
-echo "✅ Development servers started!"
-echo "📱 API Server: http://localhost:3001"
-echo "📱 API Health: http://localhost:3001/health"
-echo "📱 Feedback API: http://localhost:3001/api/feedback"
-if [ -d "apps/mobile" ]; then
-    echo "📱 Mobile App: http://localhost:19006"
-fi
+echo "✅ All servers started!"
+echo "📡 API Server: http://localhost:3001"
+echo "🖥️  Dashboard: http://localhost:3000"
+echo "📱 Mobile App: http://localhost:19006 (start manually with: cd apps/mobile && npm start)"
+echo ""
+echo "🔑 Sample Login Credentials:"
+echo "   Super Admin: superadmin@compoundconnect.com / password123"
+echo "   Manager: manager@seaside.com / password123"
+echo "   Owner: ahmed@example.com / password123"
 echo ""
 echo "Press Ctrl+C to stop all servers"
-
-# Function to cleanup on exit
-cleanup() {
-    echo ""
-    echo "🛑 Stopping development servers..."
-    kill $API_PID 2>/dev/null || true
-    if [ ! -z "$MOBILE_PID" ]; then
-        kill $MOBILE_PID 2>/dev/null || true
-    fi
-    echo "✅ All servers stopped"
-    exit 0
-}
-
-# Set trap to cleanup on script exit
-trap cleanup SIGINT SIGTERM
 
 # Wait for background processes
 wait
 EOF
 
-chmod +x start-dev.sh
+    chmod +x start-dev.sh
+    print_success "Created start-dev.sh script"
+}
 
-# Create test script
-cat > test-feedback.sh << 'EOF'
-#!/bin/bash
-echo "🧪 Testing Feedback System"
-echo "=========================="
+# Main setup function
+main() {
+    echo ""
+    print_status "Starting CompoundConnect development setup..."
+    echo ""
+    
+    # Check prerequisites
+    check_node
+    
+    # Install dependencies
+    install_dependencies
+    
+    # Setup environment files
+    setup_env_files
+    
+    # Setup database
+    setup_database
+    
+    # Create startup script
+    create_startup_script
+    
+    echo ""
+    print_success "🎉 Setup completed successfully!"
+    echo ""
+    echo "📋 Next Steps:"
+    echo "1. Start all development servers: ./start-dev.sh"
+    echo "2. Open dashboard: http://localhost:3000"
+    echo "3. Login with: manager@seaside.com / password123"
+    echo ""
+    echo "📚 Documentation:"
+    echo "- Main README: ./README.md"
+    echo "- API README: ./packages/api/README.md"
+    echo "- Dashboard README: ./apps/dashboard/README.md"
+    echo ""
+    echo "🔧 Useful Commands:"
+    echo "- Reset database: cd packages/api && npm run migrate -- --reset && npm run seed -- --reset"
+    echo "- View API logs: cd packages/api && tail -f logs/api.log"
+    echo "- Run tests: npm test"
+    echo ""
+}
 
-cd packages/api
-node scripts/test-feedback.js
-EOF
-
-chmod +x test-feedback.sh
-
-print_success "Development scripts created"
-
-# Final setup verification
-print_status "Running setup verification..."
-cd packages/api
-node scripts/test-feedback.js
-
-print_success "🎉 Development environment setup complete!"
-echo ""
-echo "📋 Next Steps:"
-echo "1. Update packages/api/.env with your configuration"
-echo "2. Run './start-dev.sh' to start development servers"
-echo "3. Run './test-feedback.sh' to test the feedback system"
-echo "4. Open packages/api/feedback-api-tests.http in VS Code to test API endpoints"
-echo ""
-echo "📚 Documentation:"
-echo "- Feedback System: docs/Feedback_System.md"
-echo "- API Tests: packages/api/feedback-api-tests.http"
-echo ""
-echo "🔧 Useful Commands:"
-echo "- npm run dev (from root) - Start all development servers"
-echo "- npm run migrate (from packages/api) - Run database migrations"
-echo "- npm run feedback:test (from root) - Test feedback system"
+# Run main function
+main

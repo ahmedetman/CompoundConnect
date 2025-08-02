@@ -107,7 +107,7 @@ const createUserSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-  role: Joi.string().valid('management', 'owner').required(),
+  role: Joi.string().valid('super_admin', 'management', 'owner', 'security', 'pool_staff', 'facility_staff').required(),
   profile_picture_url: Joi.string().uri().allow('', null)
 });
 

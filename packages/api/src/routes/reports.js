@@ -362,4 +362,139 @@ router.get('/scan-activity',
   })
 );
 
+// GET /api/reports/qr-stats - Get QR code statistics
+router.get('/qr-stats',
+  authenticate,
+  authorize(['management', 'super_admin']),
+  asyncHandler(async (req, res) => {
+    const compoundId = req.user.compoundId;
+
+    const qrStats = await db.get(`
+    SELECT
+    COUNT(*) as total_qr_codes,
+    COUNT(CASE WHEN type = 'visitor' THEN 1 END) as visitor_qr_codes,
+    COUNT(CASE WHEN type LIKE 'owner_%' THEN 1 END) as owner_qr_codes,
+    COUNT(CASE WHEN is_active = 1 THEN 1 END) as active_qr_codes,
+    COUNT(CASE WHEN is_active = 0 THEN 1 END) as inactive_qr_codes,
+    COUNT(CASE WHEN valid_to < date('now') THEN 1 END) as expired_qr_codes,
+    COUNT(CASE WHEN valid_from <= date('now') AND valid_to >= date('now') AND is_active = 1 THEN 1 END) as currently_valid_qr_codes
+    FROM qr_codes
+    WHERE compound_id = ?
+    `, [compoundId]);
+
+    const scanStats = await db.get(`
+    SELECT
+    COUNT(*) as total_scans,
+    COUNT(CASE WHEN result = 'success' THEN 1 END) as successful_scans,
+    COUNT(CASE WHEN result = 'failure' THEN 1 END) as failed_scans,
+    COUNT(DISTINCT date(scanned_at)) as active_scan_days,
+    COUNT(DISTINCT scanner_user_id) as unique_scanners,
+    MAX(scanned_at) as last_scan
+    FROM scan_logs sl
+    JOIN qr_codes qr ON sl.qr_code_id = qr.id
+    WHERE qr.compound_id = ?
+    `, [compoundId]);
+
+    const recentScans = await db.all(`
+    SELECT
+    sl.scanned_at,
+    sl.result,
+    sl.location_tag,
+    qr.type,
+    qr.visitor_name,
+    u.unit_number,
+    scanner.name as scanner_name
+    FROM scan_logs sl
+    JOIN qr_codes qr ON sl.qr_code_id = qr.id
+    LEFT JOIN units u ON qr.unit_id = u.id
+    LEFT JOIN users scanner ON sl.scanner_user_id = scanner.id
+    WHERE qr.compound_id = ?
+    ORDER BY sl.scanned_at DESC
+    LIMIT 10
+    `, [compoundId]);
+
+    res.json({
+      success: true,
+      message: 'QR statistics retrieved successfully',
+      data: {
+        qr_codes: qrStats,
+        scans: scanStats,
+        recent_scans: recentScans
+      }
+    });
+  })
+);
+
+// GET /api/reports/feedback-stats - Get feedback statistics
+router.get('/feedback-stats',
+  authenticate,
+  authorize(['management', 'super_admin']),
+  asyncHandler(async (req, res) => {
+    const compoundId = req.user.compoundId;
+
+    const feedbackStats = await db.get(`
+    SELECT
+    COUNT(*) as total_feedback,
+    COUNT(CASE WHEN status = 'open' THEN 1 END) as open_feedback,
+    COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_feedback,
+    COUNT(CASE WHEN status = 'resolved' THEN 1 END) as resolved_feedback,
+    COUNT(CASE WHEN status = 'closed' THEN 1 END) as closed_feedback,
+    COUNT(CASE WHEN priority = 'critical' THEN 1 END) as critical_feedback,
+    COUNT(CASE WHEN priority = 'high' THEN 1 END) as high_priority_feedback,
+    COUNT(CASE WHEN admin_response IS NOT NULL THEN 1 END) as responded_feedback,
+    COUNT(DISTINCT user_id) as unique_users_feedback
+    FROM feedback
+    WHERE compound_id = ?
+    `, [compoundId]);
+
+    const typeStats = await db.all(`
+    SELECT
+    type,
+    COUNT(*) as count
+    FROM feedback
+    WHERE compound_id = ?
+    GROUP BY type
+    ORDER BY count DESC
+    `, [compoundId]);
+
+    const categoryStats = await db.all(`
+    SELECT
+    category,
+    COUNT(*) as count
+    FROM feedback
+    WHERE compound_id = ?
+    GROUP BY category
+    ORDER BY count DESC
+    `, [compoundId]);
+
+    const recentFeedback = await db.all(`
+    SELECT
+    f.id,
+    f.title,
+    f.type,
+    f.category,
+    f.priority,
+    f.status,
+    f.created_at,
+    u.name as user_name
+    FROM feedback f
+    JOIN users u ON f.user_id = u.id
+    WHERE f.compound_id = ?
+    ORDER BY f.created_at DESC
+    LIMIT 10
+    `, [compoundId]);
+
+    res.json({
+      success: true,
+      message: 'Feedback statistics retrieved successfully',
+      data: {
+        summary: feedbackStats,
+        by_type: typeStats,
+        by_category: categoryStats,
+        recent_feedback: recentFeedback
+      }
+    });
+  })
+);
+
 module.exports = router;

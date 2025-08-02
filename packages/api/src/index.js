@@ -56,6 +56,17 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    api_version: '1.0.0',
+    database: 'connected'
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/qrcodes', qrCodeRoutes);
