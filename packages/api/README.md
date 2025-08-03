@@ -121,12 +121,76 @@ The API uses JWT-based authentication with refresh tokens:
 
 ### Management Routes (`/api/management`)
 
-#### Units
-- `GET /units` - Get all units with pagination and filters
-- `POST /units` - Create new unit
-- `PUT /units/:id` - Update unit
-- `DELETE /units/:id` - Delete unit
-- `GET /units/:id` - Get unit by ID
+#### Units Management
+
+**Get All Units**
+```http
+GET /api/management/units
+```
+- **Auth Required**: Yes (management, super_admin)
+- **Query Parameters**: `page`, `limit`, `sort_by`, `sort_order`
+- **Response**: Paginated list of units with payment status
+
+**Create Unit**
+```http
+POST /api/management/units
+```
+- **Auth Required**: Yes (management, super_admin)
+- **Body**: `{ "unit_number": "string" }`
+- **Response**: Created unit details
+
+**Get Unit Details**
+```http
+GET /api/management/units/:id
+```
+- **Auth Required**: Yes (management, super_admin)
+- **Response**: Unit details with payments and assigned users
+
+**Update Unit**
+```http
+PUT /api/management/units/:id
+```
+- **Auth Required**: Yes (management, super_admin)
+- **Body**: `{ "unit_number": "string" }`
+- **Response**: Updated unit details
+
+**Delete Unit**
+```http
+DELETE /api/management/units/:id
+```
+- **Auth Required**: Yes (management, super_admin)
+- **Response**: Success message
+- **Constraints**: Cannot delete if unit has users or payments
+
+**Assign User to Unit**
+```http
+POST /api/management/units/:id/assign-user
+```
+- **Auth Required**: Yes (management, super_admin)
+- **Body**: `{ "user_id": number, "relationship": "owner|tenant|family_member" }`
+- **Response**: Success message
+
+**Remove User from Unit**
+```http
+DELETE /api/management/units/:id/assign-user/:userId
+```
+- **Auth Required**: Yes (management, super_admin)
+- **Response**: Success message
+
+**Get Unit Users**
+```http
+GET /api/management/units/:id/users
+```
+- **Auth Required**: Yes (management, super_admin)
+- **Response**: List of users assigned to the unit
+
+**Update Payment Status**
+```http
+POST /api/management/units/:id/payments
+```
+- **Auth Required**: Yes (management, super_admin)
+- **Body**: `{ "service_id": number, "season_id": number, "status": "paid|due|overdue", "amount": number, "paid_on_date": "ISO date" }`
+- **Response**: Success message
 
 #### Users
 - `GET /users` - Get all users

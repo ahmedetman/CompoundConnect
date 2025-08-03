@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../database/connection');
 const authService = require('../services/authService');
+const Joi = require('joi');
 const { 
   authenticate, 
   authorize, 
@@ -220,13 +221,90 @@ router.post('/units/:id/assign-user',
     }
 
     await db.run(`
-      INSERT INTO unit_users (unit_id, user_id, relationship) 
+      INSERT INTO unit_users (unit_id, user_id, relationship)
       VALUES (?, ?, ?)
     `, [unitId, user_id, relationship]);
 
     res.status(201).json({
       success: true,
       message: 'User assigned to unit successfully'
+    });
+  })
+);
+
+// DELETE /api/management/units/:id/assign-user - Remove user from unit
+router.delete('/units/:id/assign-user',
+  authenticate,
+  authorize(['management', 'super_admin']),
+  validateId(),
+  asyncHandler(async (req, res) => {
+    const unitId = req.params.id;
+    const { user_id } = req.body; // Get user_id from request body
+    const compoundId = req.user.compoundId;
+
+    console.log('DELETE /units/:id/assign-user called with:');
+    console.log('  unitId:', unitId);
+    console.log('  user_id from body:', user_id);
+    console.log('  compoundId:', compoundId);
+
+    // Verify unit exists and belongs to compound
+    console.log('Checking if unit exists and belongs to compound');
+    const unit = await db.get(`
+      SELECT id FROM units WHERE id = ? AND compound_id = ?
+    `, [unitId, compoundId]);
+    console.log('Unit check result:', unit);
+
+    if (!unit) {
+      console.log('Unit not found');
+      throw new NotFoundError('Unit not found');
+    }
+
+    // Verify user exists and belongs to compound
+    const user = await db.get(`
+      SELECT id FROM users WHERE id = ? AND compound_id = ?
+    `, [user_id, compoundId]);
+    console.log('User check result:', user);
+
+    if (!user) {
+      console.log('User not found');
+      throw new NotFoundError('User not found');
+    }
+
+    // Check if the user is actually assigned to this unit
+    console.log('Checking assignment for unitId:', unitId, 'userId:', user_id);
+    const assignment = await db.get(`
+      SELECT id FROM unit_users WHERE unit_id = ? AND user_id = ?
+    `, [unitId, user_id]);
+    console.log('Assignment result:', assignment);
+
+    if (!assignment) {
+      console.log('User not assigned to unit - returning error');
+      return res.status(404).json({
+        success: false,
+        message: 'User is not assigned to this unit'
+      });
+    }
+
+    // Remove the user from the unit
+    console.log('Removing user from unit');
+    const result = await db.run(`
+      DELETE FROM unit_users WHERE unit_id = ? AND user_id = ?
+    `, [unitId, user_id]);
+    console.log('Delete result:', result);
+
+    res.json({
+      success: true,
+      message: 'User removed from unit successfully'
+    });
+
+    // Remove the user from the unit
+    await db.run(`
+      DELETE FROM unit_users WHERE unit_id = ? AND user_id = ?
+    `, [unitId, user_id]);
+
+    res.json({
+      success: true,
+      message: 'User removed from unit successfully'
     });
   })
 );
@@ -1668,7 +1746,5 @@ router.delete('/users/:id',
     });
   })
 );
-
-module.exports = router;
 
 module.exports = router;

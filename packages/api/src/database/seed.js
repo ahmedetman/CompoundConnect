@@ -103,46 +103,56 @@ const seedData = async (reset = false) => {
     
     // Super Admin
     const superAdminResult = await db.run(`
-      INSERT INTO users (compound_id, name, email, password_hash, role) 
-      VALUES (?, ?, ?, ?, ?)
-    `, [compoundId, 'Super Admin', 'superadmin@compoundconnect.com', hashedPassword, 'super_admin']);
+      INSERT INTO users (compound_id, name, email, password_hash, phone, role) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [compoundId, 'Super Admin', 'superadmin@compoundconnect.com', hashedPassword, '+971500000001', 'super_admin']);
     console.log('  ✓ Created Super Admin user');
 
     // Compound Manager
     const managerResult = await db.run(`
-      INSERT INTO users (compound_id, name, email, password_hash, role) 
-      VALUES (?, ?, ?, ?, ?)
-    `, [compoundId, 'Compound Manager', 'manager@seaside.com', hashedPassword, 'management']);
+      INSERT INTO users (compound_id, name, email, password_hash, phone, role) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [compoundId, 'Compound Manager', 'manager@seaside.com', hashedPassword, '+971500000002', 'management']);
     console.log('  ✓ Created Management user');
 
     // Unit Owners
     const owner1Result = await db.run(`
-      INSERT INTO users (compound_id, name, email, password_hash, role) 
-      VALUES (?, ?, ?, ?, ?)
-    `, [compoundId, 'Ahmed Mohamed', 'ahmed@example.com', hashedPassword, 'owner']);
+      INSERT INTO users (compound_id, name, email, password_hash, phone, role) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [compoundId, 'Ahmed Mohamed', 'ahmed@example.com', hashedPassword, '+971500000003', 'owner']);
 
     const owner2Result = await db.run(`
-      INSERT INTO users (compound_id, name, email, password_hash, role) 
-      VALUES (?, ?, ?, ?, ?)
-    `, [compoundId, 'Sarah Johnson', 'sarah@example.com', hashedPassword, 'owner']);
+      INSERT INTO users (compound_id, name, email, password_hash, phone, role) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [compoundId, 'Sarah Johnson', 'sarah@example.com', hashedPassword, '+971500000004', 'owner']);
 
     const owner3Result = await db.run(`
-      INSERT INTO users (compound_id, name, email, password_hash, role) 
-      VALUES (?, ?, ?, ?, ?)
-    `, [compoundId, 'Mohamed Ali', 'mohamed@example.com', hashedPassword, 'owner']);
-    console.log('  ✓ Created 3 Owner users');
+      INSERT INTO users (compound_id, name, email, password_hash, phone, role) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [compoundId, 'Mohamed Ali', 'mohamed@example.com', hashedPassword, '+971500000005', 'owner']);
+
+    const tenantResult = await db.run(`
+      INSERT INTO users (compound_id, name, email, password_hash, phone, role) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [compoundId, 'John Tenant', 'john@example.com', hashedPassword, '+971500000008', 'owner']);
+
+    const familyMemberResult = await db.run(`
+      INSERT INTO users (compound_id, name, email, password_hash, phone, role) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [compoundId, 'Aisha Family', 'aisha@example.com', hashedPassword, '+971500000009', 'owner']);
+    console.log('  ✓ Created Owner users');
 
     // Security Personnel
     const securityResult = await db.run(`
-      INSERT INTO users (compound_id, name, email, password_hash, role) 
-      VALUES (?, ?, ?, ?, ?)
-    `, [compoundId, 'Security Guard', 'security@seaside.com', hashedPassword, 'security']);
+      INSERT INTO users (compound_id, name, email, password_hash, phone, role) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [compoundId, 'Security Guard', 'security@seaside.com', hashedPassword, '+971500000006', 'security']);
 
     // Pool Staff
     const poolStaffResult = await db.run(`
-      INSERT INTO users (compound_id, name, email, password_hash, role) 
-      VALUES (?, ?, ?, ?, ?)
-    `, [compoundId, 'Pool Staff', 'pool@seaside.com', hashedPassword, 'pool_staff']);
+      INSERT INTO users (compound_id, name, email, password_hash, phone, role) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [compoundId, 'Pool Staff', 'pool@seaside.com', hashedPassword, '+971500000007', 'pool_staff']);
     console.log('  ✓ Created Security and Pool Staff users');
 
     // Create sample units

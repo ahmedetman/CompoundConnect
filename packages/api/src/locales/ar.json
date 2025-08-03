@@ -15,6 +15,23 @@
     "failed_to_delete": "فشل في حذف الملاحظات",
     "invalid_file_type": "يُسمح فقط بالصور وملفات PDF والمستندات وملفات السجل"
   },
+  "units": {
+    "created_successfully": "تم إنشاء الوحدة بنجاح",
+    "updated_successfully": "تم تحديث الوحدة بنجاح",
+    "deleted_successfully": "تم حذف الوحدة بنجاح",
+    "retrieved_successfully": "تم استرداد الوحدة بنجاح",
+    "list_retrieved_successfully": "تم استرداد قائمة الوحدات بنجاح",
+    "users_retrieved_successfully": "تم استرداد مستخدمي الوحدة بنجاح",
+    "user_assigned_successfully": "تم تعيين المستخدم للوحدة بنجاح",
+    "user_removed_successfully": "تم إزالة المستخدم من الوحدة بنجاح",
+    "not_found": "الوحدة غير موجودة",
+    "user_not_found": "المستخدم غير موجود",
+    "unit_number_exists": "رقم الوحدة موجود بالفعل",
+    "has_users": "لا يمكن حذف وحدة بها مستخدمين معينين. يرجى إزالة المستخدمين أولاً.",
+    "has_payments": "لا يمكن حذف وحدة بها سجلات دفع موجودة",
+    "user_not_assigned": "المستخدم غير معين لهذه الوحدة",
+    "payment_updated_successfully": "تم تحديث حالة الدفع بنجاح"
+  },
   "validation": {
     "type_required": "نوع الملاحظات مطلوب",
     "type_invalid": "يجب أن يكون نوع الملاحظات أحد: تقرير خطأ، طلب ميزة، اقتراح تحسين، ملاحظات عامة",
@@ -28,7 +45,12 @@
     "priority_invalid": "يجب أن تكون الأولوية أحد: منخفضة، متوسطة، عالية، حرجة",
     "status_required": "الحالة مطلوبة",
     "status_invalid": "يجب أن تكون الحالة أحد: مفتوحة، قيد التنفيذ، محلولة، مغلقة، مكررة",
-    "admin_response_max_length": "لا يمكن أن يتجاوز رد المدير 1000 حرف"
+    "admin_response_max_length": "لا يمكن أن يتجاوز رد المدير 1000 حرف",
+    "unit_number_required": "رقم الوحدة مطلوب",
+    "unit_number_min_length": "يجب أن يكون رقم الوحدة حرفاً واحداً على الأقل",
+    "unit_number_max_length": "لا يمكن أن يتجاوز رقم الوحدة 50 حرفاً",
+    "relationship_required": "العلاقة مطلوبة",
+    "relationship_invalid": "يجب أن تكون العلاقة أحد: المالك، المستأجر، فرد من العائلة"
   },
   "types": {
     "bug": "تقرير خطأ",
@@ -58,5 +80,10 @@
     "resolved": "محلولة",
     "closed": "مغلقة",
     "duplicate": "مكررة"
+  },
+  "relationships": {
+    "owner": "المالك",
+    "tenant": "المستأجر",
+    "family_member": "فرد من العائلة"
   }
 }

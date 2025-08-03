@@ -56,7 +56,7 @@ const createUnitSchema = Joi.object({
 
 const assignUserToUnitSchema = Joi.object({
   user_id: Joi.number().integer().positive().required(),
-  relationship: Joi.string().valid('owner', 'spouse', 'child', 'tenant').default('owner')
+  relationship: Joi.string().valid('owner', 'tenant', 'family_member').default('owner')
 });
 
 const updatePaymentSchema = Joi.object({

@@ -87,6 +87,22 @@ export const unitsAPI = {
   updateUnit: (id, data) => apiClient.put(`/management/units/${id}`, data),
   deleteUnit: (id) => apiClient.delete(`/management/units/${id}`),
   getUnitById: (id) => apiClient.get(`/management/units/${id}`),
+  // Updated endpoint to correct one as per API spec
+  getUnitUsers: (id) => apiClient.get(`/management/units/${id}`),
+  assignUserToUnit: (id, data) => apiClient.post(`/management/units/${id}/assign-user`, data),
+  removeUserFromUnit: (id, userId) => {
+    console.log('Removing user from unit:', { unitId: id, userId });
+    return apiClient.delete(`/management/units/${id}/assign-user`, { data: { user_id: userId } })
+      .then(response => {
+        console.log('Successfully removed user from unit:', response);
+        return response;
+      })
+      .catch(error => {
+        console.error('Error removing user from unit:', error);
+        throw error;
+      });
+  },
+  updatePaymentStatus: (id, data) => apiClient.post(`/management/units/${id}/payments`, data),
 };
 
 // Payments API
@@ -138,6 +154,9 @@ export const managementAPI = {
   updateSettings: (data) => apiClient.put("/management/settings", data),
   getUnits: (params) => apiClient.get("/management/units", { params }),
   createUnit: (data) => apiClient.post("/management/units", data),
+  getUnitUsers: (id) => apiClient.get(`/management/units/${id}`),
+  assignUserToUnit: (id, data) => apiClient.post(`/management/units/${id}/assign-user`, data),
+  removeUserFromUnit: (id, userId) => apiClient.delete(`/management/units/${id}/assign-user`, { data: { user_id: userId } }),
   updateUnit: (id, data) => apiClient.put(`/management/units/${id}`, data),
   deleteUnit: (id) => apiClient.delete(`/management/units/${id}`),
   getUnitById: (id) => apiClient.get(`/management/units/${id}`),

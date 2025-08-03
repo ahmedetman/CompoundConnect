@@ -78,6 +78,7 @@ const createTables = async () => {
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
         profile_picture_url TEXT,
+        phone TEXT,
         role TEXT NOT NULL CHECK (role IN ('super_admin', 'management', 'owner', 'security', 'pool_staff', 'facility_staff')),
         device_token TEXT,
         is_active BOOLEAN DEFAULT 1,
@@ -108,7 +109,7 @@ const createTables = async () => {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         unit_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
-        relationship TEXT DEFAULT 'owner' CHECK (relationship IN ('owner', 'spouse', 'child', 'tenant')),
+        relationship TEXT DEFAULT 'owner' CHECK (relationship IN ('owner', 'tenant', 'family_member')),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE CASCADE,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -361,6 +362,12 @@ const createTables = async () => {
     // Create indexes for better performance
     await db.run(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
     await db.run(`CREATE INDEX IF NOT EXISTS idx_users_compound ON users(compound_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_units_compound ON units(compound_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_units_number ON units(unit_number)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_unit_users_unit ON unit_users(unit_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_unit_users_user ON unit_users(user_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_unit_users_relationship ON unit_users(relationship)`);
     await db.run(`CREATE INDEX IF NOT EXISTS idx_qr_codes_compound ON qr_codes(compound_id)`);
     await db.run(`CREATE INDEX IF NOT EXISTS idx_qr_codes_user ON qr_codes(user_id)`);
     await db.run(`CREATE INDEX IF NOT EXISTS idx_qr_codes_active ON qr_codes(is_active, valid_to)`);
@@ -368,6 +375,7 @@ const createTables = async () => {
     await db.run(`CREATE INDEX IF NOT EXISTS idx_scan_logs_date ON scan_logs(scanned_at)`);
     await db.run(`CREATE INDEX IF NOT EXISTS idx_payments_unit ON payments(unit_id)`);
     await db.run(`CREATE INDEX IF NOT EXISTS idx_payments_season ON payments(season_id)`);
+    await db.run(`CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)`);
     await db.run(`CREATE INDEX IF NOT EXISTS idx_news_compound ON news(compound_id, is_published)`);
     console.log('  ✓ Created database indexes');
 

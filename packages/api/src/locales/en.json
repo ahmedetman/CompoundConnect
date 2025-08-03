@@ -15,6 +15,23 @@
     "failed_to_delete": "Failed to delete feedback",
     "invalid_file_type": "Only images, PDFs, documents, and log files are allowed"
   },
+  "units": {
+    "created_successfully": "Unit created successfully",
+    "updated_successfully": "Unit updated successfully",
+    "deleted_successfully": "Unit deleted successfully",
+    "retrieved_successfully": "Unit retrieved successfully",
+    "list_retrieved_successfully": "Units list retrieved successfully",
+    "users_retrieved_successfully": "Unit users retrieved successfully",
+    "user_assigned_successfully": "User assigned to unit successfully",
+    "user_removed_successfully": "User removed from unit successfully",
+    "not_found": "Unit not found",
+    "user_not_found": "User not found",
+    "unit_number_exists": "Unit number already exists",
+    "has_users": "Cannot delete unit with assigned users. Please remove users first.",
+    "has_payments": "Cannot delete unit with existing payment records",
+    "user_not_assigned": "User is not assigned to this unit",
+    "payment_updated_successfully": "Payment status updated successfully"
+  },
   "validation": {
     "type_required": "Feedback type is required",
     "type_invalid": "Feedback type must be one of: bug, feature_request, improvement, general",
@@ -28,7 +45,12 @@
     "priority_invalid": "Priority must be one of: low, medium, high, critical",
     "status_required": "Status is required",
     "status_invalid": "Status must be one of: open, in_progress, resolved, closed, duplicate",
-    "admin_response_max_length": "Admin response cannot exceed 1000 characters"
+    "admin_response_max_length": "Admin response cannot exceed 1000 characters",
+    "unit_number_required": "Unit number is required",
+    "unit_number_min_length": "Unit number must be at least 1 character long",
+    "unit_number_max_length": "Unit number cannot exceed 50 characters",
+    "relationship_required": "Relationship is required",
+    "relationship_invalid": "Relationship must be one of: owner, tenant, family_member"
   },
   "types": {
     "bug": "Bug Report",
@@ -58,5 +80,10 @@
     "resolved": "Resolved",
     "closed": "Closed",
     "duplicate": "Duplicate"
+  },
+  "relationships": {
+    "owner": "Owner",
+    "tenant": "Tenant",
+    "family_member": "Family Member"
   }
 }
